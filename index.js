@@ -3,12 +3,17 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173/"],
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://wander-wave-28d5c.web.app",
+      "https://wander-wave-28d5c.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -38,10 +43,41 @@ async function run() {
 
     const roomsCollection = client.db("HotelRoomsDB").collection("hotelRooms");
 
+    // All apis
+    // get apis
     app.get("/hotelRooms", async (req, res) => {
-      const rooms = await roomsCollection.find().toArray();
+      let { minPrice, maxPrice } = req.query;
+      minPrice = parseInt(minPrice);
+      maxPrice = parseInt(maxPrice);
+      let query = {};
+      if (minPrice && maxPrice) {
+        query = { price_per_night: { $gte: minPrice, $lte: maxPrice } };
+      } else if (minPrice) {
+        query = { price_per_night: { $gte: minPrice } };
+      } else if (maxPrice) {
+        query = { price_per_night: { $lte: maxPrice } };
+      }
+      const rooms = await roomsCollection.find(query).toArray();
       res.send(rooms);
     });
+
+    app.get("/highestPricedRooms", async (req, res) => {
+      const rooms = await roomsCollection
+        .find()
+        .sort({ price_per_night: -1 })
+        .limit(4)
+        .toArray();
+      res.send(rooms);
+    });
+
+    app.get("/hotelRooms/:id", async (req, res) => {
+      const roomId = req.params.id;
+      const filter = { _id: new ObjectId(roomId) };
+      const room = await roomsCollection.findOne(filter);
+      res.send(room);
+    });
+
+    // post apis
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
