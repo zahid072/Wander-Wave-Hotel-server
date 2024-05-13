@@ -111,12 +111,24 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedValue = req.body;
-      const updatedDoc = {
+      const updatedDoc = { 
         $set: {
           availability: updatedValue.availability,
         },
       };
       const result = await roomsCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+    app.patch("/hotelRooms/user/AB", async (req, res) => {
+      const available = req.params.AB
+      const filters = { availability: false };
+      const updatedValues = req.body;
+      const updatedDocs = {
+        $set: {
+          availability: updatedValues.availability,
+        },
+      };
+      const result = await roomsCollection.updateMany(filters, updatedDocs);
       res.send(result);
     });
     app.patch("/bookings/:id", async (req, res) => {
@@ -139,6 +151,12 @@ async function run() {
       const result = await bookingsCollection.deleteOne(query);
       res.send(result);
     });
+    app.delete("/bookings/user/:email", async(req, res)=>{
+      console.log(email)
+      const query = {user_email: email}
+      const result = await bookingsCollection.deleteMany(query)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
