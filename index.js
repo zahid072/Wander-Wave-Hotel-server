@@ -74,7 +74,7 @@ async function run() {
       res.send(rooms);
     });
 
-    app.get("/hotelRooms/:id", async (req, res) => {
+    app.get("/hotelRooms/:id", async (req, res) => { 
       const roomId = req.params.id;
       const filter = { _id: new ObjectId(roomId) };
       const room = await roomsCollection.findOne(filter);
@@ -86,6 +86,13 @@ async function run() {
       const query = { user_email: email };
       const booking = await bookingsCollection.find(query).toArray();
       res.send(booking);
+    });
+    app.get("/clientReviews", async (req, res) => {
+      const reviews = await reviewsCollection
+        .find()
+        .sort({ timestamp: -1 })
+        .toArray();
+        res.send(reviews)
     });
 
     // post apis
