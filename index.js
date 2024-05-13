@@ -42,6 +42,10 @@ async function run() {
     // await client.connect();
 
     const roomsCollection = client.db("HotelRoomsDB").collection("hotelRooms");
+    const bookingsCollection = client.db("HotelRoomsDB").collection("bookings");
+    const reviewsCollection = client
+      .db("HotelRoomsDB")
+      .collection("clientReviews");
 
     // All apis
     // get apis
@@ -80,7 +84,20 @@ async function run() {
     // post apis
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
-      const result = await roomsCollection.insertOne(booking);
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    });
+    // update api
+    app.patch("/hotelRooms/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedValue = req.body;
+      const updatedDoc = {
+        $set: {
+          availability: updatedValue.availability,
+        },
+      };
+      const result = await roomsCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
