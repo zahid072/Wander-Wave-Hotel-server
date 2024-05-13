@@ -81,6 +81,13 @@ async function run() {
       res.send(room);
     });
 
+    app.get("/bookings", async(req, res)=>{
+      const {email} = req.query
+      const query = ({user_email: email})
+      const booking = await bookingsCollection.find(query).toArray();
+      res.send(booking)
+    })
+
     // post apis
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
@@ -98,6 +105,18 @@ async function run() {
         },
       };
       const result = await roomsCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedValue = req.body;
+      const updatedDoc = {
+        $set: {
+          booking_date: updatedValue.booking_date,
+        },
+      };
+      const result = await bookingsCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
 
