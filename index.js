@@ -116,7 +116,7 @@ async function run() {
     app.get("/bookings", verifyToken, async (req, res) => {
       // console.log("tokens", req.cookies.token);
       const { email } = req.query;
-      console.log(req.user)
+      console.log(req.user)  
       // verify user
       if(req.user.email !== email){
         return res.status(403).send({message: 'forbidden access'})
@@ -125,6 +125,12 @@ async function run() {
       const booking = await bookingsCollection.find(query).toArray();
       res.send(booking);
     });
+    app.get("/clientReviews/:id", async(req, res)=>{
+      const id = req.params.id
+      const filter = {roomId: id}
+      const result  = await reviewsCollection.find(filter).toArray()
+      res.send(result)
+    })
     app.get("/clientReviews", async (req, res) => {
       const reviews = await reviewsCollection
         .find()
@@ -132,8 +138,14 @@ async function run() {
         .toArray();
       res.send(reviews);
     });
+    
 
     // post apis
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      console.log('logging out', user);
+      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+  })
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingsCollection.insertOne(booking);
@@ -148,9 +160,9 @@ async function run() {
     app.patch("/hotelRooms/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
-      const updatedValue = req.body;
+      const updatedValue = req.body; 
       const updatedDoc = {
-        $set: {
+        $set: { 
           availability: updatedValue.availability,
         },
       };
